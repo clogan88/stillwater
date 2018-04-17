@@ -73,9 +73,20 @@ buoy <- buoy %>%
 
 head(buoy)
 ```
+Get mean daily water temp in 2017
 ```{r}
-bb_join <- left_join(benthic, buoy, by = "date")
+buoy_daily <- buoy %>%
+  mutate(WTMP_degC_clean = gsub("999.0", NA, WTMP_degC)) %>% # make temp column numeric
+  mutate(WTMP_degC_clean = as.numeric(WTMP_degC_clean)) %>%
+  group_by(date) %>%
+  summarize(mean_WTMP_degC_clean = mean(WTMP_degC_clean, na.rm=T)) %>% # make
+  ungroup()
 
-bb_join %>% select(id_name, x, y, date, hh_hr, mm_mn, WTMP_degC) %>%
-head()
+head(buoy_daily)
+```
+
+```{r}
+ggplot(buoy_daily, aes(date,mean_WTMP_degC_clean)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90)) # rotate x-axis labels 90 degrees
 ```
