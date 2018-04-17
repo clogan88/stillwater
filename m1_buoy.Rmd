@@ -1,0 +1,81 @@
+---
+title: "noaa_buoy"
+author: "Cheryl Logan"
+date: "4/17/2018"
+output: html_document
+---
+
+Load libraries
+
+```{r}
+library(tidyverse) # instal.packages("tidyverse")
+library(janitor) # install.packages("janitor")
+```
+
+Download 2017 noaa data (Station 46092 - MBM1)
+http://www.ndbc.noaa.gov/station_history.php?station=46092
+
+Open using tidyr function `read_table`
+
+```{r}
+buoy <-read_table("46092h2017.txt")
+```
+
+```{r}
+head(buoy_raw) # view cleaned up column headers
+
+```
+
+
+Combine header rows 1 & 2 by overwriting column names but separate using an underscore `_`
+```{r}
+## 1. overwrite column names
+names(buoy) <- str_c(names(buoy),                  ## current header
+                  buoy %>% filter(`#YY` == "#yr"), ## row1 -- don't say buoy[1,] 
+                  sep = "_")                       ## separate by `_`
+
+## inspect
+head(buoy) ## Looks a lot better
+```
+clean up a bit more to get rid of the `#`s and the `/`s.
+
+```{r}
+names(buoy) <- str_replace_all(names(buoy), "#", "")  # replace `#` with nothing 
+names(buoy) <- str_replace_all(names(buoy), "/", "_") # replace `/` with `_`
+
+## inspect to make sure it worked
+names(buoy)
+```
+
+Remove redundant 2nd row with units
+
+```{r}
+buoy <- buoy %>%
+  filter(YY_yr != "#yr") # filter out row where YY_yr is equal to "#yr"
+
+head(buoy)
+names(buoy)
+```
+```{r}
+ggplot(buoy, aes(WTMP_degC)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90)) # rotate x-axis labels 90 degrees
+```
+Water temperature is never going to be 999C, so here we begin to see that 99 or 999 are missing value codes. We can replace it with NA. Another issue is that the values are showing up as character strings rather than integers. Also need to fix this. Will do that later
+```{r}
+names(buoy)
+```
+Let's unite year month and day into a single data value in buoy data
+
+```{r}
+buoy <- buoy %>%
+  unite(date, c(YY_yr, MM_mo, DD_dy), sep = "-") # concatenate contents of 3 columns into one column to join the two datasets using a unique ID
+
+head(buoy)
+```
+```{r}
+bb_join <- left_join(benthic, buoy, by = "date")
+
+bb_join %>% select(id_name, x, y, date, hh_hr, mm_mn, WTMP_degC) %>%
+head()
+```
