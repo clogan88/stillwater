@@ -70,13 +70,13 @@ Let's unite year month and day into a single data value in buoy data
 ```{r}
 buoy <- buoy %>%
   unite(date, c(YY_yr, MM_mo, DD_dy), sep = "-") # concatenate contents of 3 columns into one column to join the two datasets using a unique ID
-
+  
 head(buoy)
 ```
 Get mean daily water temp in 2017
 ```{r}
 buoy_daily <- buoy %>%
-  mutate(WTMP_degC_clean = gsub("999.0", NA, WTMP_degC)) %>% # make temp column numeric
+  mutate(WTMP_degC_clean = gsub("99.0", NA, WTMP_degC)) %>% # make temp column numeric
   mutate(WTMP_degC_clean = as.numeric(WTMP_degC_clean)) %>%
   group_by(date) %>%
   summarize(mean_WTMP_degC_clean = mean(WTMP_degC_clean, na.rm=T)) %>% # make
@@ -84,9 +84,16 @@ buoy_daily <- buoy %>%
 
 head(buoy_daily)
 ```
+Make dates in date class
+```{r}
+
+```
+
+
 
 ```{r}
 ggplot(buoy_daily, aes(date,mean_WTMP_degC_clean)) +
   geom_point() +
-  theme(axis.text.x = element_text(angle = 90)) # rotate x-axis labels 90 degrees
+  theme(axis.text.x = element_text(angle = 90))  # rotate x-axis labels 90 degrees
+  
 ```
