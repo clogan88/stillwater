@@ -17,13 +17,13 @@ http://www.ndbc.noaa.gov/station_history.php?station=46092
 
 Open using tidyr function `read_table`
 
-```{r}
-buoy <-read_table("46092h2017.txt")
+```{r, include=FALSE, warning=FALSE, message=FALSE, results='hide')}
+buoy <-read_table2("46092h2017.txt")
 ```
 
+Take a look at the data frame
 ```{r}
-head(buoy_raw) # view cleaned up column headers
-
+head(buoy) # view column headers
 ```
 
 
@@ -35,9 +35,9 @@ names(buoy) <- str_c(names(buoy),                  ## current header
                   sep = "_")                       ## separate by `_`
 
 ## inspect
-head(buoy) ## Looks a lot better
+names(buoy) ## Looks a lot better
 ```
-clean up a bit more to get rid of the `#`s and the `/`s.
+Clean up a bit more to get rid of the `#`s and the `/`s.
 
 ```{r}
 names(buoy) <- str_replace_all(names(buoy), "#", "")  # replace `#` with nothing 
@@ -54,18 +54,15 @@ buoy <- buoy %>%
   filter(YY_yr != "#yr") # filter out row where YY_yr is equal to "#yr"
 
 head(buoy)
-names(buoy)
 ```
 ```{r}
 ggplot(buoy, aes(WTMP_degC)) +
   geom_bar() +
   theme(axis.text.x = element_text(angle = 90)) # rotate x-axis labels 90 degrees
 ```
-Water temperature is never going to be 999C, so here we begin to see that 99 or 999 are missing value codes. We can replace it with NA. Another issue is that the values are showing up as character strings rather than integers. Also need to fix this. Will do that later
-```{r}
-names(buoy)
-```
-Let's unite year month and day into a single data value in buoy data
+Water temperature is never going to be 99C, so here we begin to see that 99 or 999 are missing value codes. We can replace it with NA. Another issue is that the values are showing up as character strings rather than integers. Also need to fix this. Will do that later
+
+First, let's unite year month and day into a single data value in buoy data
 
 ```{r}
 buoy <- buoy %>%
@@ -76,10 +73,10 @@ head(buoy)
 Get mean daily water temp in 2017
 ```{r}
 buoy_daily <- buoy %>%
-  mutate(WTMP_degC_clean = gsub("99.0", NA, WTMP_degC)) %>% # make temp column numeric
-  mutate(WTMP_degC_clean = as.numeric(WTMP_degC_clean)) %>%
+  mutate(WTMP_degC_clean = gsub("99.0", NA, WTMP_degC), WSPD_m_s_clean = gsub("999.0", NA, WSPD_m_s)) %>% # make temp column numeric
+  mutate(WTMP_degC_clean = as.numeric(WTMP_degC_clean), WSPD_m_s_clean = as.numeric(WSPD_m_s_clean)) %>%
   group_by(date) %>%
-  summarize(mean_WTMP_degC_clean = mean(WTMP_degC_clean, na.rm=T)) %>% # make
+  summarize(mean_WTMP_degC_clean = mean(WTMP_degC_clean, na.rm=T), mean_WSPD_m_s_clean = mean(WSPD_m_s_clean, na.rm=T)) %>% # make
   ungroup()
 
 head(buoy_daily)
