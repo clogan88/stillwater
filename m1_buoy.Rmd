@@ -84,6 +84,15 @@ buoy_daily <- buoy %>%
 
 head(buoy_daily)
 ```
+Convert date column to a date object
+```{r}
+buoy_daily <- buoy_daily %>%
+  mutate(date = as.Date(date, "%Y-%m-%d"))
+
+head(buoy_daily)
+```
+
+
 
 Plot mean daily water temperature.
 ```{r}
