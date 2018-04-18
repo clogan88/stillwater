@@ -85,13 +85,15 @@ buoy_daily <- buoy %>%
 head(buoy_daily)
 ```
 
-
+Plot mean daily water temperature.
 ```{r}
 ggplot(buoy_daily, aes(date,mean_WTMP_degC_clean)) +
   geom_point() +
   theme(axis.text.x = element_text(angle = 90))  # rotate x-axis labels 90 degrees
   
 ```
+
+Plot mean daily wind speed.
 ```{r}
 ggplot(buoy_daily, aes(date,mean_WSPD_m_s_clean)) +
   geom_point() +
