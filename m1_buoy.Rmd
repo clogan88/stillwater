@@ -98,14 +98,23 @@ Plot mean daily water temperature.
 ```{r}
 ggplot(buoy_daily, aes(date,mean_WTMP_degC_clean)) +
   geom_point() +
-  theme(axis.text.x = element_text(angle = 90))  # rotate x-axis labels 90 degrees
-  
+  # theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
+  xlab("Month") +
+  ylab("Mean Daily Water Temp (degC)") +
+  ggtitle("2017 M1 Buoy Data - Mean Daily Temperature") +
+  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) 
+
 ```
 
 Plot mean daily wind speed.
 ```{r}
 ggplot(buoy_daily, aes(date,mean_WSPD_m_s_clean)) +
   geom_point() +
-  theme(axis.text.x = element_text(angle = 90))  # rotate x-axis labels 90 degrees
+  # theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
+  xlab("Month") +
+  ylab("Mean Daily Wind Speed (m/s)") +
+  ggtitle("2017 M1 Buoy Data - Mean Daily Wind Speed") +
+  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) 
+
   
 ```
