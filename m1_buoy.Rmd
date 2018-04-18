@@ -9,6 +9,7 @@ Load libraries. Must first install tidyverse package if not already installed us
 
 ```{r}
 library(tidyverse) # install.packages("tidyverse")
+library(reshape2) # install.packages("tidyverse")
 ```
 
 Download 2017 noaa data (Station 46092 - MBM1)
@@ -106,15 +107,17 @@ ggplot(buoy_daily, aes(date,mean_WTMP_degC_clean)) +
 
 ```
 
-Plot mean daily wind speed.
+Plot mean daily wind speed overlay with temp.
 ```{r}
-ggplot(buoy_daily, aes(date,mean_WSPD_m_s_clean)) +
+ggplot(buoy_daily, aes(date,mean_WSPD_m_s_clean, colour="red")) +
   geom_point() +
   # theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
   xlab("Month") +
   ylab("Mean Daily Wind Speed (m/s)") +
   ggtitle("2017 M1 Buoy Data - Mean Daily Wind Speed") +
-  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) 
-
-  
+  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) +
+  geom_point(aes(date,mean_WTMP_degC_clean),
+            show_guide = FALSE, colour="blue") +
+  scale_fill_discrete(name ="test",labels=c("wind","temp")) #legend not working
 ```
+
