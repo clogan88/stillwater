@@ -112,12 +112,13 @@ Plot mean daily wind speed overlay with temp.
 ggplot(buoy_daily, aes(date,mean_WSPD_m_s_clean, colour="red")) +
   geom_point() +
   # theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
-  xlab("Month") +
-  ylab("Mean Daily Wind Speed (m/s)") +
-  ggtitle("2017 M1 Buoy Data - Mean Daily Wind Speed") +
-  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) +
   geom_point(aes(date,mean_WTMP_degC_clean),
             show_guide = FALSE, colour="blue") +
-  scale_fill_discrete(name ="test",labels=c("wind","temp")) #legend not working
+  theme(legend.position = c(.1, .9)) +
+  labs(x="Month", y="Temp (degC) or Wind Speed (m/s)", col="data") +
+  ggtitle("2017 M1 Buoy - Mean Daily Wind Speed and Temperature") +
+  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) +
+  scale_color_manual(labels = c("wind", "temp"), values = c("red","blue")) 
+
 ```
 
