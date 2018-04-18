@@ -5,11 +5,10 @@ date: "4/17/2018"
 output: html_document
 ---
 
-Load libraries
+Load libraries. Must first install tidyverse package if not already installed using `install.packages("tidyverse")`
 
 ```{r}
-library(tidyverse) # instal.packages("tidyverse")
-library(janitor) # install.packages("janitor")
+library(tidyverse) # install.packages("tidyverse")
 ```
 
 Download 2017 noaa data (Station 46092 - MBM1)
@@ -17,7 +16,7 @@ http://www.ndbc.noaa.gov/station_history.php?station=46092
 
 Open using tidyr function `read_table`
 
-```{r, include=FALSE, warning=FALSE, message=FALSE, results='hide')}
+```{r}
 buoy <-read_table2("46092h2017.txt")
 ```
 
@@ -29,7 +28,7 @@ head(buoy) # view column headers
 
 Combine header rows 1 & 2 by overwriting column names but separate using an underscore `_`
 ```{r}
-## 1. overwrite column names
+## overwrite column names
 names(buoy) <- str_c(names(buoy),                  ## current header
                   buoy %>% filter(`#YY` == "#yr"), ## row1 -- don't say buoy[1,] 
                   sep = "_")                       ## separate by `_`
@@ -55,14 +54,18 @@ buoy <- buoy %>%
 
 head(buoy)
 ```
+Let's take a look at the distrubution of water temperatures
+
 ```{r}
 ggplot(buoy, aes(WTMP_degC)) +
   geom_bar() +
   theme(axis.text.x = element_text(angle = 90)) # rotate x-axis labels 90 degrees
 ```
-Water temperature is never going to be 99C, so here we begin to see that 99 or 999 are missing value codes. We can replace it with NA. Another issue is that the values are showing up as character strings rather than integers. Also need to fix this. Will do that later
 
-First, let's unite year month and day into a single data value in buoy data
+
+Water temperature is never going to be 999C, so here we begin to see that 99 or 999 are missing value codes. We can replace it with NA. Another issue is that the values are showing up as character strings rather than integers. Also need to fix this. Will do that later
+
+First, let's unite year, month, and day into a single data value in buoy data.
 
 ```{r}
 buoy <- buoy %>%
