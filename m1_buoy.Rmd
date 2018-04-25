@@ -8,26 +8,35 @@ output: html_document
 Load libraries. Must first install tidyverse package if not already installed using `install.packages("tidyverse")`
 
 ```{r}
-library(tidyverse) # install.packages("tidyverse")
-library(reshape2) # install.packages("tidyverse")
+library(tidyverse) # after install.packages("tidyverse")
+library(reshape2) # after install.packages("tidyverse")
+library(ggthemes) # after install.packages("ggthemes")
 ```
 
-Download 2017 noaa data (Station 46092 - MBM1)
+Download 2016 noaa data (Station 46092 - MBM1)
 http://www.ndbc.noaa.gov/station_history.php?station=46092
 
-Open using tidyr function `read_table`
+Read in M1 buoy data using tidyr function `read_table2`
 
 ```{r}
-buoy <-read_table2("46092h2017.txt")
+buoy <-read_table2("/Users/loga8761/Google Drive/LoganLab/Data/StillwaterCove_CTD_data/46092h2016.txt")
 ```
 
-Take a look at the data frame
+Read in 2016 Stillwater CTD  data using tidyr function `read_csv`
+```{r}
+CTD <-read_csv("/Users/loga8761/Google Drive/LoganLab/Data/StillwaterCove_CTD_data/SWC.SAT333.040816.091306.csv")
+```
+
+Take a look at the data frames
 ```{r}
 head(buoy) # view column headers
+head(CTD) # view column headers
 ```
+## Data Wrangling
 
+1. Let's start with `buoy`...
 
-Combine header rows 1 & 2 by overwriting column names but separate using an underscore `_`
+Combine header rows 1 & 2 in `buoy` by overwriting column names but separate using an underscore `_`
 ```{r}
 ## overwrite column names
 names(buoy) <- str_c(names(buoy),                  ## current header
@@ -55,70 +64,102 @@ buoy <- buoy %>%
 
 head(buoy)
 ```
-Let's take a look at the distrubution of water temperatures
-
-```{r}
-ggplot(buoy, aes(WTMP_degC)) +
-  geom_bar() +
-  theme(axis.text.x = element_text(angle = 90)) # rotate x-axis labels 90 degrees
-```
 
 
-Water temperature is never going to be 999C, so here we begin to see that 99 or 999 are missing value codes. We can replace it with NA. Another issue is that the values are showing up as character strings rather than integers. Also need to fix this. Will do that later
-
-First, let's unite year, month, and day into a single data value in buoy data.
+Fix date stamp. Unite year, month, and day into a single date column. Select date, temp and wind.
 
 ```{r}
 buoy <- buoy %>%
-  unite(date, c(YY_yr, MM_mo, DD_dy), sep = "-") # concatenate contents of 3 columns into one column to join the two datasets using a unique ID
-  
+  unite(date, c(YY_yr, MM_mo, DD_dy), sep = "-") %>% # concatenate contents of 3 columns into one column to join the two datasets using a unique ID
+  mutate(date = as.Date(date, "%Y-%m-%d")) %>%
+  select(date, WTMP_degC,WSPD_m_s)
 head(buoy)
 ```
-Get mean daily water temp in 2017
+
+2. Wrangle `CTD`... Fix date stamp. Unite year, month, and day into a single date column. Select date, temp, oxygen, and pH.
 ```{r}
+CTD <- CTD %>%
+  rename(date="Local Date + Time") %>%
+  separate(date, c('date', 'time'), sep = ' ') %>%
+  select(date,Temp_CTD, O_CTD, pH_Int) %>% # get temp, DO, and pH
+  mutate(date = as.Date(date, "%m/%d/%y")) 
+  
+head(CTD)
+```
+## Look at Water Temp
+
+Look at distrubution of water temperatures
+
+```{r}
+# plot buoy temp data
+ggplot(buoy, aes(date, WTMP_degC)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
+  scale_x_date(limits = as.Date(c('2016-05-15','2016-09-01')))
+
+# plot CTD temp data
+ggplot(CTD, aes(date, Temp_CTD)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
+  scale_x_date(limits = as.Date(c('2016-05-15','2016-09-01')))
+```
+
+
+In `buoy`, we see water temperatures of 999C, so here we begin to see that 99 or 999 are missing value codes. We can replace it with NA. Another issue is that the values are showing up as character strings rather than integers. Also need to fix this. Will do that later
+
+
+Get mean daily water temp in 2016 for buoy and CTD data
+```{r}
+# get mean daily values for buoy data (ignore NAs)
 buoy_daily <- buoy %>%
-  mutate(WTMP_degC_clean = gsub("99.0", NA, WTMP_degC), WSPD_m_s_clean = gsub("999.0", NA, WSPD_m_s)) %>% # make temp column numeric
-  mutate(WTMP_degC_clean = as.numeric(WTMP_degC_clean), WSPD_m_s_clean = as.numeric(WSPD_m_s_clean)) %>%
+  mutate(temp_degC = gsub("99.0", NA, WTMP_degC), wind_m.s = gsub("999.0", NA, WSPD_m_s)) %>% # make temp column numeric
+  mutate(temp_degC = as.numeric(temp_degC), wind_m.s = as.numeric(wind_m.s)) %>%
   group_by(date) %>%
-  summarize(mean_WTMP_degC_clean = mean(WTMP_degC_clean, na.rm=T), mean_WSPD_m_s_clean = mean(WSPD_m_s_clean, na.rm=T)) %>% # make
+  summarize(temp_degC = mean(temp_degC, na.rm=T), wind_m.s = mean(wind_m.s, na.rm=T)) %>% # make
   ungroup()
 
+# get mean daily values for CTD data (ignore NAs)
+CTD_daily <- CTD %>%
+  group_by(date) %>%
+  summarize(temp_CTD = mean(Temp_CTD, na.rm=T), DO_CTD = mean(O_CTD, na.rm=T), pH_CTD = mean(pH_Int, na.rm=T)) %>% # make
+  ungroup()
+
+
 head(buoy_daily)
+head(CTD_daily)
 ```
-Convert date column to a date object
+Plot mean daily temp, DO and pH.
 ```{r}
-buoy_daily <- buoy_daily %>%
-  mutate(date = as.Date(date, "%Y-%m-%d"))
+CTD_daily_plot <- gather(CTD_daily,"data_type","value",2:4)  # reshape
 
-head(buoy_daily)
-```
-
-
-
-Plot mean daily water temperature.
-```{r}
-ggplot(buoy_daily, aes(date,mean_WTMP_degC_clean)) +
+ggplot(CTD_daily_plot, aes(date,value)) +
   geom_point() +
-  # theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
-  xlab("Month") +
-  ylab("Mean Daily Water Temp (degC)") +
-  ggtitle("2017 M1 Buoy Data - Mean Daily Temperature") +
-  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) 
+  facet_grid(data_type ~., scales = "free") +
+  theme_bw() +
+  ggtitle("Stillwater CTD and M1 buoy data") +
+  scale_x_date(date_breaks = "1 month", limits = as.Date(c('2016-05-15','2016-09-01')))
 
 ```
 
+Merge buoy and CTD data by date
+```{r}
+CTD_buoy <- left_join(CTD_daily,buoy_daily, "date")
+```
+
+Reshape to use facet plotting
+```{r}
+CTD_buoy_plot <- CTD_buoy %>%
+  gather("data_type","value",2:6)  # reshape
+
+head(CTD_buoy_plot)
+```
 Plot mean daily wind speed overlay with temp.
 ```{r}
-ggplot(buoy_daily, aes(date,mean_WSPD_m_s_clean, colour="red")) +
+ggplot(CTD_buoy_plot, aes(date,value)) +
   geom_point() +
-  # theme(axis.text.x = element_text(angle = 90)) + # rotate x-axis labels 90 degrees
-  geom_point(aes(date,mean_WTMP_degC_clean),
-            show_guide = FALSE, colour="blue") +
-  theme(legend.position = c(.1, .9)) +
-  labs(x="Month", y="Temp (degC) or Wind Speed (m/s)", col="data") +
-  ggtitle("2017 M1 Buoy - Mean Daily Wind Speed and Temperature") +
-  scale_x_date(date_minor_breaks = "1 week", limits = as.Date(c('2017-05-01','2017-09-01'))) +
-  scale_color_manual(labels = c("wind", "temp"), values = c("red","blue")) 
+  facet_grid(data_type ~., scales = "free") +
+  theme_bw() +
+  ggtitle("Stillwater CTD and M1 buoy data") +
+  scale_x_date(limits = as.Date(c('2016-05-15','2016-09-01')))
 
 ```
-
