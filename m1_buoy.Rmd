@@ -156,10 +156,10 @@ head(CTD_buoy_plot)
 Plot mean daily wind speed overlay with temp.
 ```{r}
 ggplot(CTD_buoy_plot, aes(date,value)) +
-  geom_line() +
+  geom_point() +
   facet_grid(data_type ~., scales = "free") +
   theme_bw() +
   ggtitle("Stillwater CTD and M1 buoy data (daily averages)") +
-  scale_x_date(limits = as.Date(c('2016-05-15','2016-09-01')))
+  scale_x_date(limits = as.Date(c('2016-06-01','2016-08-15'))) # set xlims
 
 ```
