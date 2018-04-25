@@ -115,7 +115,7 @@ buoy_daily <- buoy %>%
   mutate(temp_degC = gsub("99.0", NA, WTMP_degC), wind_m.s = gsub("999.0", NA, WSPD_m_s)) %>% # make temp column numeric
   mutate(temp_degC = as.numeric(temp_degC), wind_m.s = as.numeric(wind_m.s)) %>%
   group_by(date) %>%
-  summarize(temp_degC = mean(temp_degC, na.rm=T), wind_m.s = mean(wind_m.s, na.rm=T)) %>% # make
+  summarize(temp_M1 = mean(temp_degC, na.rm=T), wind_M1 = mean(wind_m.s, na.rm=T)) %>% # make
   ungroup()
 
 # get mean daily values for CTD data (ignore NAs)
@@ -143,7 +143,7 @@ ggplot(CTD_daily_plot, aes(date,value)) +
 
 Merge buoy and CTD data by date
 ```{r}
-CTD_buoy <- left_join(CTD_daily,buoy_daily, "date")
+CTD_buoy <- left_join(buoy_daily, CTD_daily, "date")
 ```
 
 Reshape to use facet plotting
@@ -156,10 +156,10 @@ head(CTD_buoy_plot)
 Plot mean daily wind speed overlay with temp.
 ```{r}
 ggplot(CTD_buoy_plot, aes(date,value)) +
-  geom_point() +
+  geom_line() +
   facet_grid(data_type ~., scales = "free") +
   theme_bw() +
-  ggtitle("Stillwater CTD and M1 buoy data") +
+  ggtitle("Stillwater CTD and M1 buoy data (daily averages)") +
   scale_x_date(limits = as.Date(c('2016-05-15','2016-09-01')))
 
 ```
