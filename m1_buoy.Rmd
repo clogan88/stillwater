@@ -112,22 +112,33 @@ Get mean daily water temp in 2016 for buoy and CTD data
 ```{r}
 # get mean daily values for buoy data (ignore NAs)
 buoy_daily <- buoy %>%
-  mutate(temp_degC = gsub("99.0", NA, WTMP_degC), wind_m.s = gsub("999.0", NA, WSPD_m_s)) %>% # make temp column numeric
+  mutate(temp_degC = gsub("99.0", NA, WTMP_degC), wind_m.s = gsub("99.0", NA, WSPD_m_s)) %>% # make temp column numeric
   mutate(temp_degC = as.numeric(temp_degC), wind_m.s = as.numeric(wind_m.s)) %>%
   group_by(date) %>%
   summarize(temp_M1 = mean(temp_degC, na.rm=T), wind_M1 = mean(wind_m.s, na.rm=T)) %>% # make
   ungroup()
+rm(buoy) # remove from workspace to save on memory
 
 # get mean daily values for CTD data (ignore NAs)
 CTD_daily <- CTD %>%
   group_by(date) %>%
   summarize(temp_CTD = mean(Temp_CTD, na.rm=T), DO_CTD = mean(O_CTD, na.rm=T), pH_CTD = mean(pH_Int, na.rm=T)) %>% # make
   ungroup()
-
+rm(CTD) # remove from workspace to save on memory
 
 head(buoy_daily)
 head(CTD_daily)
 ```
+
+Plot M1 wind speed vs temp
+```{r}
+ggplot(buoy_daily, aes(wind_M1,temp_M1)) +
+  geom_point() +
+  geom_smooth(method='lm') + # Add linear regression line (95% CI)
+  theme_bw() +
+  ggtitle("M1 buoy data") 
+```
+
 Plot mean daily temp, DO and pH.
 ```{r}
 CTD_daily_plot <- gather(CTD_daily,"data_type","value",2:4)  # reshape
