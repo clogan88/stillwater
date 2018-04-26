@@ -165,5 +165,5 @@ ggplot(CTD_buoy_plot, aes(date,value)) +
 ```
 Save plot
 ```{r}
-ggsave("StillwaterCTD_M1.pdf", width = 8, height = 8)
+ggsave("StillwaterCTD_M1.pdf", width = 6, height = 8)
 ```
