@@ -147,7 +147,7 @@ ggplot(CTD_daily_plot, aes(date,value)) +
   geom_point() +
   facet_grid(data_type ~., scales = "free") +
   theme_bw() +
-  ggtitle("Stillwater CTD and M1 buoy data") +
+  ggtitle("2016 Stillwater CTD data") +
   scale_x_date(date_breaks = "1 month", limits = as.Date(c('2016-05-15','2016-09-01')))
 
 ```
@@ -174,6 +174,7 @@ ggplot(CTD_buoy_plot, aes(date,value)) +
   scale_x_date(limits = as.Date(c('2016-06-01','2016-08-15'))) # set xlims
 
 ```
+
 Save plot
 ```{r}
 ggsave("StillwaterCTD_M1_point.pdf", width = 6, height = 8)
@@ -192,5 +193,5 @@ ggplot(CTD_buoy_plot, aes(date,value)) +
 
 Save plot
 ```{r}
-ggsave("StillwaterCTD_M1_line.pdf", width = 6, height = 8)
+ggsave("StillwaterCTD_M1_line.pdf", width = 6, height = 7)
 ```
