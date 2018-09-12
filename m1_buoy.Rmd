@@ -195,3 +195,12 @@ Save plot
 ```{r}
 ggsave("StillwaterCTD_M1_line.pdf", width = 6, height = 7)
 ```
+
+
+2017 sampling dates of coppers:
+june 20 
+june 27
+july 5
+july 11
+july 25
+aug 2
